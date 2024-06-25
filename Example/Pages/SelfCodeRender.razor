@@ -1,0 +1,56 @@
+﻿@using static System.Text.Json.JsonSerializer
+<HeadContent>
+    <script src="/Pages/SelfCodeRender.razor.js"></script>
+    <!--todo : 복수 Render에서 중복 호출하지 않도록-->
+</HeadContent>
+
+@code {
+    [Parameter] public IEnumerable<SelfCodeMarker.LineInfos> View { get; init; }
+
+    Task? update_reqd = null;
+    void Update() => update_reqd ??= InvokeAsync(StateHasChanged);
+    protected override void OnAfterRender(bool firstRender)
+        => update_reqd = null;
+}
+<pre>
+    @foreach (var (line, infos) in View ?? [])
+    {
+        if (!infos.Any())
+        {
+            <span>@line</span>
+        }
+        else if (infos.Any(i => i is Exception))
+        {
+            <mark style="background-color:red;">@line</mark>
+        }
+        else
+        {
+            <mark>@line</mark>
+        }
+
+        if(infos.Any())
+        {
+            <i>
+                @("<--")
+                @if (infos.LastOrDefault() is SelfCodeMarker.TaskInfo { From: { } from, Task: var t } info)
+                {
+                    @string.Join(", ", infos.SkipLast(1))
+                    @if (info is { Done: { } done })
+                    {
+                        <text>Done! (@((int)(done - from).TotalMilliseconds)msec) @(new { t.Status })</text>
+                    }        
+                    else
+                    {
+                        <text>Waiting.. (<stop-watch-msec start=@SerializeToElement(from).GetString() />msec)</text>
+                        t?.GetAwaiter().OnCompleted(Update);
+                    }
+                }
+                else
+                {
+                    @string.Join(", ", infos)
+                }
+            </i>
+        }
+        <br />
+    }
+</pre>

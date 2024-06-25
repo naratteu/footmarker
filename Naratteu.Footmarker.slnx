@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Naratteu.Footmarker\Naratteu.Footmarker.csproj" />x
+  <Project Path="Example\Example.csproj" />
+</Solution>

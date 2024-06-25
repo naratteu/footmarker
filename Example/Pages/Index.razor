@@ -1,0 +1,18 @@
+﻿@page "/"
+@implements IDisposable
+
+<h1>Hello, world!</h1>
+
+<SelfCodeRender View="Program.print ?? []" />
+
+@code {
+    readonly CancellationTokenSource cts = new();
+    void IDisposable.Dispose() { using (cts) cts.Cancel(); }
+
+    protected override void OnInitialized() => _ = Loop();
+    async Task Loop()
+    {
+        for (; !cts.IsCancellationRequested; await Task.Delay(100))
+            StateHasChanged();
+    }
+}
